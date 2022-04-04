@@ -1,0 +1,16 @@
+{
+  "name": "2nd-project-node",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "joe",
+  "license": "ISC",
+  "dependencies": {
+    "cannon-es": "^0.19.0",
+    "three": "^0.138.3",
+    "three-particle-fire": "^0.0.0"
+  }
+}

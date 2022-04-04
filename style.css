@@ -1,0 +1,163 @@
+body {
+  background-color: #000000;
+  color: #000;
+}
+
+      canvas{
+       position: absolute;
+       width: 90%;
+       height: 100%; 
+       top: 0;
+       left: 0;
+       z-index: -1;
+       
+   }
+   fieldset{
+
+      color: white;
+      width: 20%;
+      align-items: center;
+   }
+
+   #or{color: white;
+      position: absolute;
+      bottom: 10px;
+      left: 600px;
+      font-size: 24px;
+}
+   #ml{color: white;
+      position: absolute;
+      bottom: 10px;
+      right: 370px;
+      font-size: 24px;}
+  
+      .class_rocks{
+      background: #000;
+      height: 38px;
+      border: none;
+      overflow: hidden;
+      margin: 10px;
+      }
+
+
+.class_rocks:focus {
+outline: none;
+}
+.class_rocks option{
+background-color:brown; 
+border: none;
+margin-right: 10px;
+/* margin-bottom: 10px; */
+padding: 10px;
+border-radius: 8pt;
+color: white;
+/* height: 40px; */
+width: px;
+text-align: center;
+text-decoration: none;
+/* box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.7); */
+cursor: pointer;
+display: inline-block;
+
+}
+.class_rocks option:checked{
+background-color: #f7d9aa;
+color: black;
+}
+.button{
+    background-color:brown; 
+    border: none;
+    border-radius: 8pt;
+    color: white;
+    height: 40px;
+    width: px;
+    text-align: center;
+    text-decoration: none;
+    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.7);
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+/* button {background: red;} */
+.button:focus {background: green;}
+.button:hover{
+    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.7);
+    color:brown;
+    background-color: white;
+}
+input[type=range] {
+    -webkit-appearance: none;
+    margin: 18px 0;
+    width: 100%;
+}
+/* The Modal (background) */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    padding-top: 100px; /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
+  }
+  
+  /* Modal Content (image) */
+  .modal-content {
+    margin: auto;
+    display: block;
+    width: 80%;
+    max-width: 700px;
+  }
+  
+  /* Caption of Modal Image */
+  #caption {
+    margin: auto;
+    display: block;
+    width: 80%;
+    max-width: 700px;
+    text-align: center;
+    color: #ccc;
+    padding: 10px 0;
+    height: 150px;
+  }
+  
+  /* Add Animation */
+  .modal-content, #caption {  
+    -webkit-animation-name: zoom;
+    -webkit-animation-duration: 0.6s;
+    animation-name: zoom;
+    animation-duration: 0.6s;
+  }
+  
+  @-webkit-keyframes zoom {
+    from {-webkit-transform:scale(0)} 
+    to {-webkit-transform:scale(1)}
+  }
+  
+  @keyframes zoom {
+    from {transform:scale(0)} 
+    to {transform:scale(1)}
+  }
+  
+  /* The Close Button */
+  .close {
+    position: absolute;
+    top: 15px;
+    right: 35px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    transition: 0.3s;
+  }
+  
+  
+  
+  /* 100% Image Width on Smaller Screens */
+  @media only screen and (max-width: 700px){
+    .modal-content {
+      width: 100%;
+    }
+  }

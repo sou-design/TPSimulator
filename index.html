@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<!-- <link type="text/css" rel="stylesheet" href="main.css"> -->
+        <link rel="stylesheet" type="text/css" href="style.css">
+		
+	</head>
+
+	<body>
+
+        
+		<div id="container"></div>
+        <fieldset>
+            <legend>Roches Magmatiques <span>--------</span> Roches Métamorphiques <span>------</span> Roches Sédimentaires</legend>
+            <select name="rocks " class="class_rocks" multiple>
+                <option selected id="gr" value="gr" >Granit</option>
+                <option id="bs" value="bs" style="margin-right: 25px;">Basalte</option>
+                <option id="gn" value="gn">Gneiss</option>
+                <option id="sc" value="sc">Schiste</option>
+                <option id="ca" value="ca" style="margin-right: 25px;">Calcaire</option>
+                <option id="sa" value="sa">Sable</option>
+                <option id="ar" value="ar" style="margin-right: 20px;">Argile</option>
+              </select>
+            
+        </fieldset>
+        
+        <fieldset>
+          <legend>Temperature</legend>
+          <input id="S" type="range" min="-10" max="100" step="0.2" value="25" >
+          <output id="AsliderVal">Temperature = 25 °C</output>
+        </fieldset>
+        
+        
+        <fieldset>
+            <legend>Ajouter</legend>
+            <button id="eau" class="button" type="button" >H2O</button>
+            <button id="hcl" class="button" type="button" >HCL</button>
+           </fieldset>
+           <fieldset>
+               <legend>actions</legend>
+               <button id="show" class="button" type="button">vue microscopique</button>
+               <img id="Imggr" src="/TP/mGranit.jpg"  style=" display : none">
+               <img id="Imgba" src="/TP/mBasalte.jpg" style=" display : none">
+               <img id="Imggn" src="/TP/mGneiss.jpg"  style=" display : none">
+               <img id="Imgsc" src="/TP/mSchiste.jpg" style=" display : none">
+               <img id="Imgca" src="/TP/mCalcaire.jpg" style=" display : none">
+               <img id="Imgsa" src="/TP/mSable.jpg" style="display : none">
+               <img id="Imgar" src="/TP/mArgile.jpeg" style="display : none">
+               
+           </fieldset>
+           
+            <div id="myModal" class="modal">
+                <span class="close">&times;</span>
+                <img class="modal-content" id="img01">
+                <div id="caption"></div>
+            </div>
+		
+        <script src="./three.js"></script>
+		<script type="module">
+
+        var e = document.getElementsByClassName("class_rocks");
+        var modal = document.getElementById("myModal");
+
+
+        var show = document.getElementById("show");
+
+        var modalImg = document.getElementById("img01");
+
+        show.onclick = function(){
+            var img = document.getElementById("Img"+e[0].selectedOptions[0].value);
+            modal.style.display = "block";
+            modalImg.src = img.src;
+        }
+
+        var span = document.getElementsByClassName("close")[0];
+
+        span.onclick = function() { 
+        modal.style.display = "none";
+        }
+
+            import { OrbitControls } from './node_modules/three/examples/js/controls/OrbitControls.js';
+            import { GLTFLoader } from './node_modules/three/examples/js/loaders/GLTFLoader.js';
+            import { DRACOLoader } from './node_modules/three/examples/js/loaders/DRACOLoader.js';
+            import {MTLLoader} from './node_modules/three/examples/js/loaders/MTLLoader.js';
+            import { OBJLoader } from './node_modules/three/examples/js/loaders/OBJLoader.js';
+
+  
+            var gr = document.getElementById( 'gr' );
+            var bs = document.getElementById( 'bs' );
+            var gn = document.getElementById( 'gn' );
+            var sc = document.getElementById( 'sc' );
+            var ca = document.getElementById( 'ca' );
+            var sa = document.getElementById( 'sa' );
+            var ar = document.getElementById( 'ar' );
+            var S = document.getElementById( 'S' );
+            var eau = document.getElementById( 'eau' );
+            var hcl = document.getElementById( 'hcl' );
+ 
+            var submit = document.getElementById("submit");
+
+            ////////
+			let mixer;
+            let mixer1;
+            let mixer2;
+
+			const clock = new THREE.Clock();
+			const container = document.getElementById( 'container' );
+
+
+			const renderer = new THREE.WebGLRenderer( { antialias: true } );
+			renderer.setPixelRatio( window.devicePixelRatio );
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			renderer.outputEncoding = THREE.sRGBEncoding;
+			container.appendChild( renderer.domElement );
+
+			const scene = new THREE.Scene();
+            const grid = new THREE.GridHelper( 10, 10, 0x888888, 0x444444 )
+            scene.add( grid );
+            grid.position.y = -2.5;
+
+			scene.background = new THREE.Color( 0x000000 );
+
+			var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+			camera.position.set( 0, 2, 8 );
+
+            /// light
+            var ambientLight = new THREE.AmbientLight(0x000000);
+            scene.add(ambientLight);
+
+            var lights = [];
+
+            lights[0] = new THREE.PointLight('#ffffff', 0.5, 0);
+            lights[0].position.set(200, 0, 0);
+
+            lights[1] = new THREE.PointLight('#ffffff', 0.5, 0);
+            lights[1].position.set(0, 200, 0);
+
+            lights[2] = new THREE.PointLight('#ffffff', 0.5, 0);
+            lights[2].position.set(0, 100, 100);
+
+            lights[3] = new THREE.AmbientLight('#ffffff', 0.6);
+
+            lights.forEach(function(light){
+                scene.add(light);
+            })
+
+            //////////
+			const controls = new OrbitControls( camera, renderer.domElement );
+			controls.target.set( 0, 0.5, 0 );
+			controls.update();
+			controls.enablePan = false;
+			controls.enableDamping = true;
+
+            /// load Flask Object
+            var mtlLoader = new MTLLoader();
+            var Flask;
+            mtlLoader.load(
+            // resource URL
+            './TP/Flask.mtl',
+            // called when resource is loaded
+            function ( materials ) {
+                materials.preload();
+                var objLoader = new OBJLoader();
+                objLoader.setMaterials( materials );
+                objLoader.load(
+                    // resource URL
+                    './TP/Flask.obj',
+                    // called when resource is loaded
+                    function ( object ) {
+                        Flask = object;
+                        
+                        scene.add(object);
+                        Flask.visible = false;
+                     
+                        return object;
+                    },
+                   
+                );
+            },
+           
+            
+        );
+            
+            /// load granite Object
+            var rockGR
+            mtlLoader.load(
+                // resource URL
+                './TP/Rock.mtl',
+                // called when resource is loaded
+                function ( materials ) {
+                    materials.preload();
+                    var objLoader = new OBJLoader();
+                    objLoader.setMaterials( materials );
+                    objLoader.load(
+                        // resource URL
+                        './TP/Rock.obj',
+                        // called when resource is loaded
+                        function ( object ) {
+                            rockGR = object;
+                            scene.add(object);
+                        
+                            return object;
+                        },
+                    
+                    );
+                },
+            
+                
+            );
+            //// load basalt Object
+            var rockBS
+            mtlLoader.load(
+                // resource URL
+                './TP/basalteRock.mtl',
+                // called when resource is loaded
+                function ( materials ) {
+                    materials.preload();
+                    var objLoader = new OBJLoader();
+                    objLoader.setMaterials( materials );
+                    objLoader.load(
+                        // resource URL
+                        './TP/basalteRock.obj',
+                        // called when resource is loaded
+                        function ( object ) {
+                            rockBS = object;
+                            scene.add(object);
+                            rockBS.visible = false;
+                        
+                            return object;
+                        },
+                    
+                    );
+                },
+            
+                
+            );
+            //// load geniss Object
+            var rockGS
+            mtlLoader.load(
+                // resource URL
+                './TP/genissRock.mtl',
+                // called when resource is loaded
+                function ( materials ) {
+                    materials.preload();
+                    var objLoader = new OBJLoader();
+                    objLoader.setMaterials( materials );
+                    objLoader.load(
+                        // resource URL
+                        './TP/genissRock.obj',
+                        // called when resource is loaded
+                        function ( object ) {
+                            rockGS = object;
+                            scene.add(object);
+                            rockGS.visible = false;
+                        
+                            return object;
+                        },
+                    
+                    );
+                },
+            
+                
+            );
+
+            /// load schiste Object
+            var rockSC;
+            mtlLoader.load(
+                // resource URL
+                './TP/schist.mtl',
+                // called when resource is loaded
+                function ( materials ) {
+                    materials.preload();
+                    var objLoader = new OBJLoader();
+                    objLoader.setMaterials( materials );
+                    objLoader.load(
+                        // resource URL
+                        './TP/schist.obj',
+                        // called when resource is loaded
+                        function ( object ) {
+                            rockSC = object;
+                            scene.add(object);
+                            /// hide object
+                            rockSC.visible = false;
+                        
+                            return object;
+                        },
+                    
+                    );
+                },
+            
+                
+            );
+                /// load calcaire Object
+            var rockCa
+            mtlLoader.load(
+                // resource URL
+                './TP/calcaireRock.mtl',
+                // called when resource is loaded
+                function ( materials ) {
+                    materials.preload();
+                    var objLoader = new OBJLoader();
+                    objLoader.setMaterials( materials );
+                    objLoader.load(
+                        // resource URL
+                        './TP/calcaireRock.obj',
+                        // called when resource is loaded
+                        function ( object ) {
+                            rockCa = object;
+                            scene.add(object);
+                            rockCa.visible = false;
+                        
+                            return object;
+                        },
+                    
+                    );
+                },
+            
+                
+            );
+            //// load sand Object
+        var rockSa;
+        mtlLoader.load(
+            // resource URL
+            './TP/sandRock.mtl',
+            // called when resource is loaded
+            function ( materials ) {
+                materials.preload();
+                var objLoader = new OBJLoader();
+                objLoader.setMaterials( materials );
+                objLoader.load(
+                    // resource URL
+                    './TP/sandRock.obj',
+                    // called when resource is loaded
+                    function ( object ) {
+                        rockSa = object;
+                        scene.add(object);
+                        /// hide object
+                        rockSa.visible = false;
+
+                     
+                        return object;
+                    },
+                   
+                );
+            },
+           
+            
+        );
+        //// load argile Object
+
+        var rockAr;
+            mtlLoader.load(
+                // resource URL
+                './TP/argileRock.mtl',
+                // called when resource is loaded
+                function ( materials ) {
+                    materials.preload();
+                    var objLoader = new OBJLoader();
+                    objLoader.setMaterials( materials );
+                    objLoader.load(
+                        // resource URL
+                        './TP/argileRock.obj',
+                        // called when resource is loaded
+                        function ( object ) {
+                            rockAr = object;
+                            scene.add(object);
+                            rockAr.visible = false;
+                        
+                            return object;
+                        },
+                    
+                    );
+                },
+            
+                
+            );
+
+
+            
+            var rocks = document.getElementsByClassName("class_rocks");
+
+            var w = document.getElementById("eau");
+            var h = document.getElementById("hcl");
+            //// temerature handler
+            var run = false;
+            S.oninput = function() {
+                document.getElementById('AsliderVal').value = "Temperature = "+this.value + " °C";
+                
+                if(rocks[0][4].selected && this.value >= 50 && run==false){
+                    mixer2 = new THREE.AnimationMixer(CO2.scene );
+                    mixer2.clipAction( CO2.animations[ 0 ] ).play();
+                    CO2.scene.visible = true;
+                    run = true;
+                }
+                else if(this.value < 50){
+                    mixer2.stopAllAction();
+                    CO2.scene.visible = false;
+                    run = false;
+                }
+                    
+                }
+            
+            
+            
+            ///// hundle submit button
+            eau.addEventListener('click',function(){
+                if(rocks[0][0].selected ){
+                    Flask.visible = true;
+                    rockGR.visible = true;
+                    rockGS.visible = false;
+                    rockSC.visible = false;
+                    rockCa.visible = false;
+                    rockSa.visible = false;
+                    rockAr.visible = false;
+                    rockBS.visible = false;
+                   
+                    mixer.stopAllAction();
+                    
+                    mixer = new THREE.AnimationMixer( waterAnimationOne.scene );
+                    mixer.clipAction( waterAnimationOne.animations[ 0 ] ).play();
+                    waterAnimationOne.scene.visible = true;
+                }
+                if(rocks[0][1].selected ){
+                    Flask.visible = true;
+                    rockGR.visible = false;
+                    rockGS.visible = false;
+                    rockSC.visible = false;
+                    rockCa.visible = false;
+                    rockSa.visible = false;
+                    rockAr.visible = false;
+                    rockBS.visible = true;
+              
+                    mixer.stopAllAction();
+                    
+                    mixer = new THREE.AnimationMixer( waterAnimationOne.scene );
+                    mixer.clipAction( waterAnimationOne.animations[ 0 ] ).play();
+                    waterAnimationOne.scene.visible = true;
+                }
+                if(rocks[0][2].selected ){
+                    Flask.visible = true;
+                    rockGR.visible = false;
+                    rockGS.visible = true;
+                    rockSC.visible = false;
+                    rockCa.visible = false;
+                    rockSa.visible = false;
+                    rockAr.visible = false;
+                    rockBS.visible = false;
+                   
+                    mixer.stopAllAction();
+                    
+                    mixer = new THREE.AnimationMixer( waterAnimationOne.scene );
+                    mixer.clipAction( waterAnimationOne.animations[ 0 ] ).play();
+                    waterAnimationOne.scene.visible = true;
+                }
+                if(rocks[0][3].selected ){
+                    Flask.visible = true;
+                    rockGR.visible = false;
+                    rockGS.visible = false;
+                    rockSC.visible = true;
+                    rockCa.visible = false;
+                    rockSa.visible = false;
+                    rockAr.visible = false;
+                    rockBS.visible = false;
+               
+                    mixer.stopAllAction();
+                    
+                    mixer = new THREE.AnimationMixer( waterAnimationTwo.scene );
+                    mixer.clipAction( waterAnimationTwo.animations[ 0 ] ).play();
+                    waterAnimationTwo.scene.visible = true;
+                }
+                if(rocks[0][4].selected ){
+                    Flask.visible = true;
+                    rockGR.visible = false;
+                    rockGS.visible = false;
+                    rockSC.visible = false;
+                    rockCa.visible = true;
+                    rockSa.visible = false;
+                    rockAr.visible = false;
+                    rockBS.visible = false;
+                    // mixer1.stopAllAction();
+                    mixer.stopAllAction();
+                    
+                    mixer = new THREE.AnimationMixer( waterAnimationOne.scene );
+                    mixer.clipAction( waterAnimationOne.animations[ 0 ] ).play();
+                    waterAnimationOne.scene.visible = true;
+                }
+                if(rocks[0][5].selected ){
+                    Flask.visible = true;
+                    rockGR.visible = false;
+                    rockGS.visible = false;
+                    rockSC.visible = false;
+                    rockCa.visible = false;
+                    rockSa.visible = true;
+                    rockAr.visible = false;
+                    rockBS.visible = false;
+                    // mixer1.stopAllAction();
+                    mixer.stopAllAction();
+                    
+                    mixer = new THREE.AnimationMixer( waterSandAnimation.scene );
+                    mixer.clipAction( waterSandAnimation.animations[ 0 ] ).play();
+                    mixer1 = new THREE.AnimationMixer( sandAnimation.scene );
+                    mixer1.clipAction( sandAnimation.animations[ 0 ] ).play();
+                    waterSandAnimation.scene.visible = true;
+                    sandAnimation.scene.visible = true;
+                    rockSa.visible = false;
+                }
+                if(rocks[0][6].selected){
+                    Flask.visible = true;
+                    rockGR.visible = false;
+                    rockGS.visible = false;
+                    rockSC.visible = false;
+                    rockCa.visible = false;
+                    rockSa.visible = false;
+                    rockAr.visible = true;
+                    rockBS.visible = false;
+                    // mixer1.stopAllAction();
+                    mixer.stopAllAction();
+                    
+                    mixer = new THREE.AnimationMixer( waterAnimationOne.scene );
+                    mixer.clipAction( waterAnimationOne.animations[ 0 ] ).play();
+                    waterAnimationOne.scene.visible = true;
+                }});
+                //////// hcl checked
+                hcl.addEventListener('click',function(){
+                if(rocks[0][0].selected ){
+                    Flask.visible = true;
+                    rockGR.visible = true;
+                    rockGS.visible = false;
+                    rockSC.visible = false;
+                    rockCa.visible = false;
+                    rockSa.visible = false;
+                    rockAr.visible = false;
+                    rockBS.visible = false;
+                    // mixer1.stopAllAction();
+                    mixer.stopAllAction();
+                    
+                    mixer = new THREE.AnimationMixer( hclAnimationOne.scene );
+                    mixer.clipAction( hclAnimationOne.animations[ 0 ] ).play();
+                    hclAnimationOne.scene.visible = true;
+                }
+                if(rocks[0][1].selected){
+                    Flask.visible = true;
+                    rockGR.visible = false;
+                    rockGS.visible = false;
+                    rockSC.visible = false;
+                    rockCa.visible = false;
+                    rockSa.visible = false;
+                    rockAr.visible = false;
+                    rockBS.visible = true;
+                    // mixer1.stopAllAction();
+                    mixer.stopAllAction();
+                    
+                    mixer = new THREE.AnimationMixer( hclAnimationOne.scene );
+                    mixer.clipAction( hclAnimationOne.animations[ 0 ] ).play();
+                    hclAnimationOne.scene.visible = true;
+                }
+                if(rocks[0][2].selected ){
+                    Flask.visible = true;
+                    rockGR.visible = false;
+                    rockGS.visible = true;
+                    rockSC.visible = false;
+                    rockCa.visible = false;
+                    rockSa.visible = false;
+                    rockAr.visible = false;
+                    rockBS.visible = false;
+                    // mixer1.stopAllAction();
+                    mixer.stopAllAction();
+                    
+                    mixer = new THREE.AnimationMixer( hclAnimationOne.scene );
+                    mixer.clipAction( hclAnimationOne.animations[ 0 ] ).play();
+                    hclAnimationOne.scene.visible = true;
+                }
+                if(rocks[0][3].selected ){
+                    Flask.visible = true;
+                    rockGR.visible = false;
+                    rockGS.visible = false;
+                    rockSC.visible = true;
+                    rockCa.visible = false;
+                    rockSa.visible = false;
+                    rockAr.visible = false;
+                    rockBS.visible = false;
+                    // mixer1.stopAllAction();
+                    mixer.stopAllAction();
+                    
+                    mixer = new THREE.AnimationMixer( hclAnimationTwo.scene );
+                    mixer.clipAction( hclAnimationTwo.animations[ 0 ] ).play();
+                    hclAnimationTwo.scene.visible = true;
+                }
+                if(rocks[0][4].selected ){
+                    Flask.visible = true;
+                    rockGR.visible = false;
+                    rockGS.visible = false;
+                    rockSC.visible = false;
+                    rockCa.visible = true;
+                    rockSa.visible = false;
+                    rockAr.visible = false;
+                    rockBS.visible = false;
+                    // mixer1.stopAllAction();
+                    mixer.stopAllAction();
+                    mixer1.stopAllAction();
+
+                    mixer = new THREE.AnimationMixer( hclAnimationOne.scene );
+                    mixer.clipAction( hclAnimationOne.animations[ 0 ] ).play();
+
+                    setTimeout( function() { 
+                        mixer1 = new THREE.AnimationMixer(steam.scene );
+                        mixer1.clipAction( steam.animations[ 0 ] ).play();
+                        steam.scene.visible = true;
+                    }, 500);
+                    
+                    hclAnimationOne.scene.visible = true;
+                    
+                }
+                if(rocks[0][5].selected){
+                    Flask.visible = true;
+                    rockGR.visible = false;
+                    rockGS.visible = false;
+                    rockSC.visible = false;
+                    rockCa.visible = false;
+                    rockSa.visible = true;
+                    rockAr.visible = false;
+                    rockBS.visible = false;
+                    // mixer1.stopAllAction();
+                    mixer.stopAllAction();
+                    
+                    mixer = new THREE.AnimationMixer( hclSandAnimation.scene );
+                    mixer.clipAction( hclSandAnimation.animations[ 0 ] ).play();
+                    mixer1 = new THREE.AnimationMixer( sandAnimation.scene );
+                    mixer1.clipAction( sandAnimation.animations[ 0 ] ).play();
+                    hclSandAnimation.scene.visible = true;
+                    sandAnimation.scene.visible = true;
+                    rockSa.visible = false;
+                }
+                if(rocks[0][6].selected){
+                    Flask.visible = true;
+                    rockGR.visible = false;
+                    rockGS.visible = false;
+                    rockSC.visible = false;
+                    rockCa.visible = false;
+                    rockSa.visible = false;
+                    rockAr.visible = true;
+                    rockBS.visible = false;
+                    // mixer1.stopAllAction();
+                    mixer.stopAllAction();
+                    
+                    mixer = new THREE.AnimationMixer( hclAnimationOne.scene );
+                    mixer.clipAction( hclAnimationOne.animations[ 0 ] ).play();
+                    hclAnimationOne.scene.visible = true;
+                }
+            });
+     
+
+
+            gr.addEventListener('click', function(){
+                    mixer.stopAllAction();
+                    mixer1.stopAllAction();
+                    mixer2.stopAllAction();
+                    Flask.visible = false;
+                    waterAnimationOne.scene.visible = false;
+                    waterAnimationTwo.scene.visible = false;
+                    waterSandAnimation.scene.visible = false;
+                    sandAnimation.scene.visible = false;
+                    hclAnimationOne.scene.visible = false;
+                    hclAnimationTwo.scene.visible = false;
+                    hclSandAnimation.scene.visible = false;
+                    steam.scene.visible = false;
+                    CO2.scene.visible = false;
+                    rockGR.visible = true;
+                    rockGS.visible = false;
+                    rockSC.visible = false;
+                    rockCa.visible = false;
+                    rockSa.visible = false;
+                    rockAr.visible = false;
+                    rockBS.visible = false;
+              
+            });
+            bs.addEventListener('click', function(){
+                    mixer.stopAllAction();
+                    mixer1.stopAllAction();
+                    mixer2.stopAllAction();
+                    Flask.visible = false;
+                    waterAnimationOne.scene.visible = false;
+                    waterAnimationTwo.scene.visible = false;
+                    waterSandAnimation.scene.visible = false;
+                    sandAnimation.scene.visible = false;
+                    hclAnimationOne.scene.visible = false;
+                    hclAnimationTwo.scene.visible = false;
+                    hclSandAnimation.scene.visible = false;
+                    steam.scene.visible = false;
+                    CO2.scene.visible = false;
+                    rockGR.visible = false;
+                    rockBS.visible = true;
+                    rockGS.visible = false;
+                    rockSC.visible = false;
+                    rockCa.visible = false;
+                    rockSa.visible = false;
+                    rockAr.visible = false;
+                    
+                
+            });
+            
+            gn.addEventListener('click', function(){
+                    mixer.stopAllAction();
+                    mixer1.stopAllAction();
+                    mixer2.stopAllAction();
+                    Flask.visible = false;
+                    waterAnimationOne.scene.visible = false;
+                    waterAnimationTwo.scene.visible = false;
+                    waterSandAnimation.scene.visible = false;
+                    sandAnimation.scene.visible = false;
+                    hclAnimationOne.scene.visible = false;
+                    hclAnimationTwo.scene.visible = false;
+                    hclSandAnimation.scene.visible = false;
+                    steam.scene.visible = false;
+                    CO2.scene.visible = false;
+                    rockGR.visible = false;
+                    rockBS.visible = false;
+                    rockGS.visible = true;
+                    rockSC.visible = false;
+                    rockCa.visible = false;
+                    rockSa.visible = false;
+                    rockAr.visible = false;
+                
+            });
+            
+            sc.addEventListener('click', function(){
+                    mixer.stopAllAction();
+                    mixer1.stopAllAction();
+                    mixer2.stopAllAction();
+                    Flask.visible = false;
+                    waterAnimationOne.scene.visible = false;
+                    waterAnimationTwo.scene.visible = false;
+                    waterSandAnimation.scene.visible = false;
+                    sandAnimation.scene.visible = false;
+                    hclAnimationOne.scene.visible = false;
+                    hclAnimationTwo.scene.visible = false;
+                    hclSandAnimation.scene.visible = false;
+                    steam.scene.visible = false;
+                    CO2.scene.visible = false;
+                    rockGR.visible = false;
+                    rockBS.visible = false;
+                    rockGS.visible = false;
+                    rockSC.visible = true;
+                    rockCa.visible = false;
+                    rockSa.visible = false;
+                    rockAr.visible = false;
+           
+            });
+            ca.addEventListener('click', function(){
+                    mixer.stopAllAction();
+                    mixer1.stopAllAction();
+                    Flask.visible = false;
+                    waterAnimationOne.scene.visible = false;
+                    waterAnimationTwo.scene.visible = false;
+                    waterSandAnimation.scene.visible = false;
+                    sandAnimation.scene.visible = false;
+                    hclAnimationOne.scene.visible = false;
+                    hclAnimationTwo.scene.visible = false;
+                    hclSandAnimation.scene.visible = false;
+                    steam.scene.visible = false;
+                    rockGR.visible = false;
+                    rockBS.visible = false;
+                    rockGS.visible = false;
+                    rockSC.visible = false;
+                    rockCa.visible = true;
+                    rockSa.visible = false;
+                    rockAr.visible = false;
+              
+            });
+            sa.addEventListener('click', function(){
+                    mixer.stopAllAction();
+                    mixer1.stopAllAction();
+                    mixer2.stopAllAction();
+                    Flask.visible = false;
+                    waterAnimationOne.scene.visible = false;
+                    waterAnimationTwo.scene.visible = false;
+                    waterSandAnimation.scene.visible = false;
+                    sandAnimation.scene.visible = false;
+                    hclAnimationOne.scene.visible = false;
+                    hclAnimationTwo.scene.visible = false;
+                    hclSandAnimation.scene.visible = false;
+                    steam.scene.visible = false;
+                    CO2.scene.visible = false;
+                    rockGR.visible = false;
+                    rockBS.visible = false;
+                    rockGS.visible = false;
+                    rockSC.visible = false;
+                    rockCa.visible = false;
+                    rockSa.visible = true;
+                    rockAr.visible = false;
+            
+            });
+            ar.addEventListener('click', function(){
+                    mixer.stopAllAction();
+                    mixer1.stopAllAction();
+                    mixer2.stopAllAction();
+                    Flask.visible = false;
+                    waterAnimationOne.scene.visible = false;
+                    waterAnimationTwo.scene.visible = false;
+                    waterSandAnimation.scene.visible = false;
+                    sandAnimation.scene.visible = false;
+                    hclAnimationOne.scene.visible = false;
+                    hclAnimationTwo.scene.visible = false;
+                    hclSandAnimation.scene.visible = false;
+                    steam.scene.visible = false;
+                    CO2.scene.visible = false;
+                    rockGR.visible = false;
+                    rockBS.visible = false;
+                    rockGS.visible = false;
+                    rockSC.visible = false;
+                    rockCa.visible = false;
+                    rockSa.visible = false;
+                    rockAr.visible = true;
+               
+            });
+
+           
+
+            //// water animation 
+            var waterAnimationOne;
+            var waterAnimationTwo;
+            var sandAnimation;
+            var waterSandAnimation;
+            //// hcl animation
+            var hclAnimationOne;
+            var hclAnimationTwo;
+            var hclSandAnimation;
+            var steam;
+            var CO2;
+
+            /// dracoLoader
+			const dracoLoader = new DRACOLoader();
+			dracoLoader.setDecoderPath( './node_modules/three/examples/js/libs/draco/gltf/' );
+
+            /// texture loader
+            var mat,geo;
+            const textureSand = new THREE.TextureLoader().load( 'TP/sand_text.jpg' );
+            const textureWater = new THREE.TextureLoader().load( 'TP/water.jpg' );
+
+            // const textureWater = new THREE.TextureLoader().load( 'TP/water.jpg' );
+            const textureVapor = new THREE.TextureLoader().load( 'TP/smoke.jpg' );
+
+            var materialHcl = new THREE.MeshPhysicalMaterial();
+            materialHcl.color = new THREE.Color(0xfffd69);
+            var materialWater = new THREE.MeshPhysicalMaterial();
+            materialWater.color = new THREE.Color(0xfffeb0);
+            var materialSteam = new THREE.MeshPhysicalMaterial();
+            materialSteam.color = new THREE.Color(0xe0e0e0);
+        // immediately use the texture for material creation
+                const material = new THREE.MeshBasicMaterial( { map: textureWater } );
+                //////////////////////////////////////
+			const loader = new GLTFLoader();
+			loader.setDRACOLoader( dracoLoader );
+           // water gr
+			loader.load( 'glb/water5.glb', function ( gltf ) {
+
+                waterAnimationOne = gltf ;
+				const model = gltf.scene;
+              
+                var mesh01;
+                gltf.scene.traverse( function( object ) 
+                 {            
+                   if ((object instanceof THREE.Mesh))
+                    { 
+                        mesh01 = object;
+                        object.material = materialWater;
+                        object.material.opacity = 0.3;
+                        object.material.transparent = true;
+                       
+
+                    }
+                });
+				
+				scene.add( model );
+                waterAnimationOne.scene.visible = false;
+
+				mixer = new THREE.AnimationMixer( model );
+				
+                    animate();
+       
+
+			}, undefined, function ( e ) {
+
+				console.error( e );
+
+			} );
+            // hcl gr
+			loader.load( 'glb/water5.glb', function ( gltf ) {
+
+                hclAnimationOne = gltf ;
+				const model = gltf.scene;
+                
+                var mesh01;
+                gltf.scene.traverse( function( object ) 
+                 {            
+                   if ((object instanceof THREE.Mesh))
+                    { 
+                        mesh01 = object;
+                        object.material = materialHcl;
+                        object.material.opacity = 0.5;
+                        object.material.transparent = true;
+                        
+
+                    }
+                });
+               
+				scene.add( model );
+                hclAnimationOne.scene.visible = false;
+
+				
+                    animate();
+
+
+			}, undefined, function ( e ) {
+
+				console.error( e );
+
+			} );
+            /// water sc
+            loader.load( 'glb/water9.glb', function ( gltf ) {
+
+            waterAnimationTwo = gltf;
+            const model = gltf.scene;
+         
+            var mesh01;
+                gltf.scene.traverse( function( object ) 
+                 {            
+                   if ((object instanceof THREE.Mesh))
+                    { 
+                        mesh01 = object;
+                        object.material = materialWater;
+                        object.material.opacity = 0.3;
+                        object.material.transparent = true;
+
+                    }
+                });
+            
+            scene.add( model );
+            waterAnimationTwo.scene.visible = false;
+
+                animate();
+            
+                
+
+
+            }, undefined, function ( e ) {
+
+            console.error( e );
+
+            } );
+            //// hcl sc
+            loader.load( 'glb/water9.glb', function ( gltf ) {
+
+                hclAnimationTwo = gltf ;
+				const model = gltf.scene;
+                // console.log(gltf);
+                var mesh01;
+                gltf.scene.traverse( function( object ) 
+                 {            
+                   if ((object instanceof THREE.Mesh))
+                    { 
+                        mesh01 = object;
+                        object.material = materialHcl;
+                        object.material.opacity = 0.5;
+                        object.material.transparent = true;
+
+                    }
+                });
+ 
+				scene.add( model );
+                hclAnimationTwo.scene.visible = false;
+
+                    animate();
+               
+				
+                
+
+			}, undefined, function ( e ) {
+
+				console.error( e );
+
+			} );
+            ////// sand
+            /// sand Box
+            loader.load( 'glb/boxAndSand.glb', function ( gltf ) {
+
+            sandAnimation = gltf;
+            const model = gltf.scene;
+
+            gltf.scene.traverse( function( object ) 
+                 {            
+                   if ((object instanceof THREE.Mesh))
+                    { 
+                          mat = object.material;
+                          geo = object.geometry;
+                          mat.map = textureSand;
+                    }
+                });
+            
+            scene.add( model );
+            sandAnimation.scene.visible = false;
+
+                animate();
+   
+
+            }, undefined, function ( e ) {
+
+            console.error( e );
+
+            } );
+            ////// water for sand
+            loader.load( 'glb/waterS.glb', function ( gltf ) {
+
+            waterSandAnimation = gltf;
+            const model = gltf.scene;
+  
+            var mesh01;
+                gltf.scene.traverse( function( object ) 
+                 {            
+                   if ((object instanceof THREE.Mesh))
+                    { 
+                        mesh01 = object;
+                        object.material = materialWater;
+                        object.material.opacity = 0.3;
+                        object.material.transparent = true;
+                       
+
+                    }
+                });
+          
+            scene.add( model );
+            waterSandAnimation.scene.visible = false;
+
+            
+            mixer1 = new THREE.AnimationMixer( model );
+ 
+                animate();
+          
+                
+
+
+            }, undefined, function ( e ) {
+
+            console.error( e );
+
+            } );
+            /// hcl for sand
+            loader.load( 'glb/waterS.glb', function ( gltf ) {
+
+                hclSandAnimation = gltf ;
+				const model = gltf.scene;
+            
+                var mesh01;
+                gltf.scene.traverse( function( object ) 
+                 {            
+                   if ((object instanceof THREE.Mesh))
+                    { 
+                        mesh01 = object;
+                        object.material = materialHcl;
+                        object.material.opacity = 0.5;
+                        object.material.transparent = true;
+                     
+
+                    }
+                });
+
+				scene.add( model );
+                hclSandAnimation.scene.visible = false;
+
+                    animate();
+                
+				
+                
+
+			}, undefined, function ( e ) {
+
+				console.error( e );
+
+			} );
+            ////// vapor
+            loader.load( 'glb/smoke3.glb', function ( gltf ) {
+
+            steam = gltf;
+            const model = gltf.scene;
+
+            var mesh01;
+                gltf.scene.traverse( function( object ) 
+                 {            
+                   if ((object instanceof THREE.Mesh))
+                    { 
+                        mesh01 = object;
+                        object.material = materialSteam;
+                        object.material.opacity = 0.3;
+                        object.material.transparent = true;
+                       
+
+                    }
+                });
+          
+            scene.add( model );
+            steam.scene.visible = false;
+
+
+                animate();
+           
+                
+
+
+            }, undefined, function ( e ) {
+
+            console.error( e );
+
+            } );
+            ///// CO2
+            loader.load( 'glb/smoke3.glb', function ( gltf ) {
+
+            CO2 = gltf;
+            const model = gltf.scene;
+        
+            var mesh01;
+                gltf.scene.traverse( function( object ) 
+                 {            
+                   if ((object instanceof THREE.Mesh))
+                    { 
+                        mesh01 = object;
+                        object.material = materialSteam;
+                        object.material.opacity = 0.1;
+                        object.material.transparent = true;
+                      
+
+                    }
+                });submit
+            
+            scene.add( model );
+            CO2.scene.visible = false;
+
+            mixer2 = new THREE.AnimationMixer( model );
+ 
+                animate();
+ 
+            }, undefined, function ( e ) {
+
+            console.error( e );
+
+            } );
+
+			window.onresize = function () {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			};
+
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+
+				const delta = clock.getDelta();
+
+                        setTimeout( function() { 
+                            mixer.update( delta );
+                            mixer1.update( delta );
+                            mixer2.update( delta );
+                        }, 2000);
+
+				controls.update();
+
+
+				renderer.render( scene, camera );
+
+			}
+
+
+		</script>
+
+	</body>
+
+</html>
